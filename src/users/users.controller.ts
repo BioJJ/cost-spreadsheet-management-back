@@ -2,6 +2,8 @@ import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common'
 import { UserService } from './users.service'
 import { User } from './entities/user.entity'
 import { IsPublic } from 'src/auth/decorators/is-public.decorator'
+import { CreateUserDto } from './dto/create-user.dto'
+import { UpdateUserDto } from './dto/update-user.dto'
 
 @Controller('users')
 export class UserController {
@@ -9,30 +11,30 @@ export class UserController {
 
 	@IsPublic()
 	@Post()
-	create(@Body() userData: Partial<User>): Promise<User> {
-		return this.userService.create(userData)
+	async create(@Body() createUserDto: CreateUserDto): Promise<User> {
+		return await this.userService.create(createUserDto)
 	}
 
 	@Get()
-	findAll(): Promise<User[]> {
-		return this.userService.findAll()
+	async findAll(): Promise<User[]> {
+		return await this.userService.findAll()
 	}
 
 	@Get(':id')
-	findOne(@Param('id') id: string): Promise<User | null> {
-		return this.userService.findOne(+id)
+	async findOne(@Param('id') id: string): Promise<User | null> {
+		return await this.userService.findOne(+id)
 	}
 
 	@Put(':id')
-	update(
+	async update(
 		@Param('id') id: number,
-		@Body() userData: Partial<User>
+		@Body() updateUserDto: UpdateUserDto
 	): Promise<number> {
-		return this.userService.update(id, userData)
+		return await this.userService.update(id, updateUserDto)
 	}
 
 	@Delete(':id')
-	remove(@Param('id') id: string): Promise<number> {
-		return this.userService.remove(+id)
+	async remove(@Param('id') id: string): Promise<number> {
+		return await this.userService.remove(+id)
 	}
 }
