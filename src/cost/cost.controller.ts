@@ -23,12 +23,16 @@ export class CostController {
 	@UseInterceptors(FileInterceptor('file'))
 	async uploadFile(@UploadedFile() file: Express.Multer.File): Promise<any> {
 		const costArray = await this.costService.sendToExternalApi(file)
-		console.log(costArray)
 
 		const createdOrUpdatedCosts =
 			await this.costService.createOrUpdate(costArray)
 
 		return createdOrUpdatedCosts
+	}
+
+	@Get('test')
+	async test(): Promise<string> {
+		return await this.costService.testToExternalApi()
 	}
 
 	@Post()

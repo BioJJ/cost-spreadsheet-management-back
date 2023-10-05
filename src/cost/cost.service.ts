@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, UploadedFile } from '@nestjs/common'
 import { Cost } from './entities/cost.entity'
 import { lastValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
 import { ConfigService } from '@nestjs/config'
+import * as FormData from 'form-data'
+import { createReadStream } from 'fs'
+
 @Injectable()
 export class CostService {
 	constructor(
@@ -13,62 +16,87 @@ export class CostService {
 	async sendToExternalApi(file: Express.Multer.File): Promise<Cost[]> {
 		const url = this.configService.get('API_PYTHON')
 
-		const config = {
-			headers: {
-				'Content-Type': 'multipart/form-data'
-			}
-		}
-		const body = {
-			file
-		}
+		try {
+			const formData = new FormData()
+			formData.append('file', createReadStream(file.path), {
+				filename: file.originalname,
+				contentType: file.mimetype
+			})
 
-		const response = await lastValueFrom(
-			this.httpService.post<Cost[]>(url, body, config)
-		)
-		return response.data
+			const config = {
+				headers: {
+					...formData.getHeaders()
+				}
+			}
+
+			const response = await lastValueFrom(
+				this.httpService.post(`${url}/processar-planilha`, formData, config)
+			)
+
+			return response.data
+		} catch (error) {
+			throw error
+		}
+	}
+
+	async testToExternalApi(): Promise<string> {
+		const url = this.configService.get('API_PYTHON')
+
+		try {
+			const response = await lastValueFrom(this.httpService.get(`${url}/test`))
+
+			return response.data
+		} catch (error) {
+			console.error('error ==>', error)
+			throw error
+		}
 	}
 
 	async createOrUpdate(castList: Cost[]) {
-		const createdOrUpdatedCosts = []
-		for (const cost of castList) {
-			if (cost.id === -1) {
-				const createCostDto = {
-					description: cost.description,
-					transactionDate: cost.transactionDate,
-					transactionType: cost.transactionType,
-					value: cost.value,
-					recipient: cost.recipient
-				}
-				const newCost = await this.create(createCostDto)
-				createdOrUpdatedCosts.push(newCost)
-			} else if (cost.id > -1) {
-				const costVerify = await this.findOne(cost.id)
+		if (castList) {
+			const createdOrUpdatedCosts = []
+			for (const cost of castList) {
+				if (cost.id === -1) {
+					const createCostDto = {
+						description: cost.description,
+						transactionDate: cost.transactionDate,
+						transactionType: cost.transactionType,
+						value: cost.value,
+						recipient: cost.recipient
+					}
+					const newCost = await this.create(createCostDto)
+					createdOrUpdatedCosts.push(newCost)
+				} else if (cost.id > -1) {
+					const costVerify = await this.findOne(cost.id)
 
-				const updateCostDto = {
-					description: cost.description,
-					transactionDate: cost.transactionDate,
-					transactionType: cost.transactionType,
-					value: cost.value,
-					recipient: cost.recipient
-				}
+					const updateCostDto = {
+						description: cost.description,
+						transactionDate: cost.transactionDate,
+						transactionType: cost.transactionType,
+						value: cost.value,
+						recipient: cost.recipient
+					}
 
-				if (costVerify) {
-					const affectedRows = await this.update(cost.id, updateCostDto)
-					if (affectedRows === 1) {
-						const updatedCost = await this.findOne(cost.id)
-						createdOrUpdatedCosts.push(updatedCost)
+					if (costVerify) {
+						const affectedRows = await this.update(cost.id, updateCostDto)
+						if (affectedRows === 1) {
+							const updatedCost = await this.findOne(cost.id)
+							createdOrUpdatedCosts.push(updatedCost)
+						} else {
+							throw new Error('Falha na atualização do Cost.')
+						}
 					} else {
-						throw new Error('Falha na atualização do Cost.')
+						const newCost = await this.create(updateCostDto)
+						createdOrUpdatedCosts.push(newCost)
 					}
 				} else {
-					const newCost = await this.create(updateCostDto)
-					createdOrUpdatedCosts.push(newCost)
+					throw new Error('Valor de id inválido retornado pela API externa.')
 				}
-			} else {
-				throw new Error('Valor de id inválido retornado pela API externa.')
 			}
+			return createdOrUpdatedCosts
+		} else {
+			throw new Error('Lista vazia')
 		}
-		return createdOrUpdatedCosts
 	}
 
 	async create(costData: Partial<Cost>) {
