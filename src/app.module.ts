@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common'
+import { Module, ValidationPipe } from '@nestjs/common'
+import { APP_PIPE } from '@nestjs/core'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { UsersModule } from './users/users.module'
@@ -8,6 +9,7 @@ import * as Joi from '@hapi/joi'
 import { AuthModule } from './auth/auth.module'
 import { APP_GUARD } from '@nestjs/core'
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard'
+import { CostModule } from './cost/cost.module'
 
 @Module({
 	imports: [
@@ -23,7 +25,8 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard'
 		}),
 		DatabaseModule,
 		UsersModule,
-		AuthModule
+		AuthModule,
+		CostModule
 	],
 	controllers: [AppController],
 	providers: [
@@ -31,6 +34,10 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard'
 		{
 			provide: APP_GUARD,
 			useClass: JwtAuthGuard
+		},
+		{
+			provide: APP_PIPE,
+			useClass: ValidationPipe
 		}
 	]
 })
