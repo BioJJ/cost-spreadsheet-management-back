@@ -4,19 +4,19 @@ import { User } from './entities/user.entity'
 @Injectable()
 export class UserService {
 	async create(userData: Partial<User>): Promise<User> {
-		return User.create(userData)
+		return await User.create(userData)
 	}
 
 	async findAll(): Promise<User[]> {
-		return User.findAll()
+		return await User.findAll()
 	}
 
 	async findOne(id: number): Promise<User | null> {
-		return User.findByPk(id)
+		return await User.findByPk(id)
 	}
 
 	async findEmail(email: string): Promise<User | null> {
-		return User.findOne({ where: { email } })
+		return await User.findOne({ where: { email } })
 	}
 
 	async update(id: number, userData: Partial<User>): Promise<number> {
