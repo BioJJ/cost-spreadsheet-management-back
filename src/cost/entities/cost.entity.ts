@@ -18,18 +18,18 @@ export class Cost extends Model {
 	description: string
 
 	@Column({
-		type: DataType.DATE,
+		type: DataType.STRING,
 		allowNull: false,
 		field: 'transaction_date'
 	})
-	transactionDate: Date
+	transactionDate: string
 
 	@Column({
-		type: DataType.ENUM('Débito', 'Crédito'),
+		type: DataType.STRING,
 		allowNull: true,
 		field: 'transaction_type'
 	})
-	transactionType: 'Débito' | 'Crédito'
+	transactionType: string
 
 	@Column({
 		type: DataType.DECIMAL(10, 2),

@@ -8,10 +8,10 @@ export class CreateCostDto {
 	description: string
 
 	@IsNotEmpty()
-	transactionDate: Date
+	transactionDate: string
 
 	@IsNotEmpty()
-	transactionType: 'Débito' | 'Crédito'
+	transactionType: string
 
 	@IsNotEmpty()
 	value: number
