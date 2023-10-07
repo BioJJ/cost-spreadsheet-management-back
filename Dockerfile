@@ -1,20 +1,32 @@
-# Use a imagem Node.js 14 como base
-FROM node:14
+# Use a imagem Node.js como base
+FROM node:14-alpine
 
-# Define o diretório de trabalho no contêiner
+# Diretório de trabalho no contêiner
 WORKDIR /app
 
-# Copie o arquivo package.json e o arquivo package-lock.json para o diretório de trabalho
+# Copie o arquivo package.json e package-lock.json para o contêiner
 COPY package*.json ./
 
 # Instale as dependências
 RUN npm install
 
-# Copie todos os arquivos do projeto para o diretório de trabalho
+# Copie todo o código fonte para o contêiner
 COPY . .
 
-# Exponha a porta em que a API NestJS será executada (3000)
+# Exponha a porta que a aplicação NestJS irá escutar
+ENV PORT 3000
 EXPOSE 3000
 
-# Comando para iniciar a aplicação
-CMD ["npm", "start"]
+# Variáveis de ambiente para o PostgreSQL
+ENV POSTGRES_HOST=
+ENV POSTGRES_PORT=
+ENV POSTGRES_USER=
+ENV POSTGRES_PASSWORD=
+ENV POSTGRES_DB=
+ENV API_PYTHON=
+
+# Variável de ambiente para a chave secreta do JWT
+ENV JWT_SECRET_KEY=
+
+# Comando para iniciar a aplicação NestJS
+CMD [ "npm", "start" ]
