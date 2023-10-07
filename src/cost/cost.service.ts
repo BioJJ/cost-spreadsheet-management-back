@@ -14,7 +14,14 @@ export class CostService {
 	) {}
 
 	async sendToExternalApi(file: Express.Multer.File): Promise<Cost[]> {
-		const url = this.configService.get('API_PYTHON')
+		const host = this.configService.get('API_PYTHON') || 'http://127.0.0.1'
+		const port = this.configService.get('API_PYTHON_PORT') || '5000'
+		console.log('host ==> ', host)
+		console.log('port ==> ', port)
+		let url = ''
+		if (host) {
+			url = `http://${host}`
+		}
 
 		try {
 			const formData = new FormData()
@@ -30,7 +37,11 @@ export class CostService {
 			}
 
 			const response = await lastValueFrom(
-				this.httpService.post(`${url}/processar-planilha`, formData, config)
+				this.httpService.post(
+					`${url}:${port}/processar-planilha`,
+					formData,
+					config
+				)
 			)
 
 			return response.data
@@ -40,10 +51,18 @@ export class CostService {
 	}
 
 	async testToExternalApi(): Promise<string> {
-		const url = this.configService.get('API_PYTHON')
-
+		const host = this.configService.get('API_PYTHON') || 'http://127.0.0.1'
+		const port = this.configService.get('API_PYTHON_PORT') || '5000'
+		console.log('host ==> ', host)
+		console.log('port ==> ', port)
+		let url = ''
+		if (host) {
+			url = `http://${host}`
+		}
 		try {
-			const response = await lastValueFrom(this.httpService.get(`${url}/test`))
+			const response = await lastValueFrom(
+				this.httpService.get(`${url}:${port}/test`)
+			)
 
 			return response.data
 		} catch (error) {
